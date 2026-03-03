@@ -24,20 +24,7 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    import socket
-    domains = ["www.google.com", "www.youtube.com", "www.instagram.com"]
-    dns_results = {}
-    for domain in domains:
-        try:
-            socket.gethostbyname(domain)
-            dns_results[domain] = "ok"
-        except Exception as e:
-            dns_results[domain] = f"failed: {str(e)}"
-    
-    return {
-        "status": "healthy",
-        "dns_diagnostics": dns_results
-    }
+    return {"status": "healthy"}
 
 DOWNLOAD_DIR = "downloads"
 if not os.path.exists(DOWNLOAD_DIR):
