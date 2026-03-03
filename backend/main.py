@@ -34,8 +34,19 @@ class MediaRequest(BaseModel):
     url: str
 
 def get_yt_dlp_options(is_audio=False, output_path=""):
+    opts = {
+        'quiet': True,
+        'no_warnings': True,
+        'nocheckcertificate': True,
+        'source_address': '0.0.0.0', # Force IPv4
+    }
+    
+    # Use cookies if available
+    if os.path.exists("cookies.txt"):
+        opts['cookiefile'] = "cookies.txt"
+
     if is_audio:
-        return {
+        opts.update({
             'format': 'bestaudio/best',
             'postprocessors': [{
                 'key': 'FFmpegExtractAudio',
@@ -43,24 +54,19 @@ def get_yt_dlp_options(is_audio=False, output_path=""):
                 'preferredquality': '192',
             }],
             'outtmpl': output_path,
-            'quiet': True,
-            'no_warnings': True,
-            'nocheckcertificate': True,
-        }
+        })
     else:
-        return {
+        opts.update({
             'format': 'bestvideo+bestaudio/best',
             'outtmpl': output_path,
-            'quiet': True,
-            'no_warnings': True,
-            'nocheckcertificate': True,
-            'source_address': '0.0.0.0', # Force IPv4
-        }
+        })
+    return opts
 
 @app.post("/api/info")
 async def get_info(request: MediaRequest):
     try:
-        with yt_dlp.YoutubeDL({'quiet': True, 'nocheckcertificate': True}) as ydl:
+        ydl_opts = get_yt_dlp_options()
+        with yt_dlp.YoutubeDL(ydl_opts) as ydl:
             info = ydl.extract_info(request.url, download=False)
             
             # Prefer 'thumbnail' but fallback to the first item in 'thumbnails' list
