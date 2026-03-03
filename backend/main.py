@@ -25,13 +25,19 @@ async def root():
 @app.get("/health")
 async def health_check():
     import socket
-    diagnostics = {"status": "healthy"}
-    try:
-        socket.gethostbyname("www.instagram.com")
-        diagnostics["instagram_dns"] = "ok"
-    except Exception as e:
-        diagnostics["instagram_dns"] = f"failed: {str(e)}"
-    return diagnostics
+    domains = ["www.google.com", "www.youtube.com", "www.instagram.com"]
+    dns_results = {}
+    for domain in domains:
+        try:
+            socket.gethostbyname(domain)
+            dns_results[domain] = "ok"
+        except Exception as e:
+            dns_results[domain] = f"failed: {str(e)}"
+    
+    return {
+        "status": "healthy",
+        "dns_diagnostics": dns_results
+    }
 
 DOWNLOAD_DIR = "downloads"
 if not os.path.exists(DOWNLOAD_DIR):
@@ -61,6 +67,7 @@ def get_yt_dlp_options(is_audio=False, output_path=""):
             'quiet': True,
             'no_warnings': True,
             'nocheckcertificate': True,
+            'source_address': '0.0.0.0', # Force IPv4
         }
 
 @app.post("/api/info")
