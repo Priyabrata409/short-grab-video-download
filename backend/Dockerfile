@@ -10,6 +10,8 @@ WORKDIR /app
 # Install system dependencies
 RUN apt-get update && apt-get install -y --no-install-recommends \
     ffmpeg \
+    ca-certificates \
+    curl \
     && apt-get clean && rm -rf /var/lib/apt/lists/*
 
 # Install python dependencies

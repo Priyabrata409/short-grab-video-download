@@ -24,7 +24,14 @@ async def root():
 
 @app.get("/health")
 async def health_check():
-    return {"status": "healthy"}
+    import socket
+    diagnostics = {"status": "healthy"}
+    try:
+        socket.gethostbyname("www.instagram.com")
+        diagnostics["instagram_dns"] = "ok"
+    except Exception as e:
+        diagnostics["instagram_dns"] = f"failed: {str(e)}"
+    return diagnostics
 
 DOWNLOAD_DIR = "downloads"
 if not os.path.exists(DOWNLOAD_DIR):
